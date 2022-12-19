@@ -1,7 +1,7 @@
-import DashBoard from './dashboard';
+import OneToOneChat from './one-to-one-chat';
 
 function Root() {
-  return <DashBoard />;
+  return <OneToOneChat />;
 }
 
 export default Root;
