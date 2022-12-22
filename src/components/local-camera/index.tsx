@@ -10,7 +10,7 @@ try {
   });
   console.log(`Connected to server ${obsWebSocketVersion} (using RPC ${negotiatedRpcVersion})`);
 } catch (error) {
-  console.error('Failed to connect', error.code, error.message);
+  console.log(error);
 }
 
 const getMedia = () => {
