@@ -12,7 +12,7 @@ interface ILoginResponse {
 }
 
 export const login = async (params: ILoginParams) => {
-  const res = (await $http.post<ILoginResponse>('user/login', params)).data;
-  authStore.setToken(res.token);
-  authStore.setUsername(res.user.username);
+  const res = (await $http.post<IResponse<ILoginResponse>>('user/login', params)).data;
+  authStore.setToken(res.data.token);
+  authStore.setUsername(res.data.user.username);
 };

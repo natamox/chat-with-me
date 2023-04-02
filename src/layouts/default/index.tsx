@@ -7,7 +7,7 @@ export const DefaultLayout = memo(
   observer((props: React.PropsWithChildren<ISafeAny>) => (
     <StyledContainer>
       <LeftSlideBar />
-      {props.children}
+      <StyledRightContainer>{props.children}</StyledRightContainer>
     </StyledContainer>
   )),
 );
@@ -17,4 +17,10 @@ const StyledContainer = styled.div`
   height: 100%;
   width: 100%;
   overflow: hidden;
+`;
+
+const StyledRightContainer = styled.div`
+  flex: 1;
+  padding: 16px;
+  background: #f4f5f8;
 `;

@@ -1,15 +1,8 @@
 import Webcam from 'react-webcam';
 
-const videoConstraints = {
-  width: { min: 480 },
-  height: { min: 720 },
-  aspectRatio: 0.6666666667,
-};
-function LocalCamera() {
+export function Camera() {
   const onCallBack = (stream: MediaStream) => {
     console.log('stream', stream.getTracks());
   };
-  return <Webcam onUserMedia={onCallBack} />;
+  return <Webcam onUserMedia={onCallBack} style={{ width: '100%', height: '100%' }} />;
 }
-
-export default LocalCamera;

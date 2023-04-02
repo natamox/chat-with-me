@@ -1,38 +1,38 @@
 import { PageContainer } from '@components';
 import styled from '@emotion/styled';
-import { $socket } from '@utils';
 import { Button, Modal } from 'antd';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useModal } from '@hooks';
 import { useNavigate } from 'react-router-dom';
+import { ERoomType } from '@pages/room/models';
 import { VideoCard } from './videoCard';
-import { CreateRoomModal } from './createRoomModal';
+import { RoomModal } from './roomModal';
 
 export function RoomRootPage() {
   const navigate = useNavigate();
+  const typeRef = useRef<{ type: ERoomType }>({ type: ERoomType.Create });
 
   const [openModal, modalProps] = useModal({
     afterComplete: navigate,
   });
 
-  // 加入房间
   function joinRoom() {
-    $socket.join('1');
+    typeRef.current.type = ERoomType.Join;
+    openModal();
   }
-  const sendMessage = () => {
-    $socket.sendMessage('1', 'hello');
-  };
 
-  const create = () => {
-    $socket.create('ssss');
+  const createRoom = () => {
+    typeRef.current.type = ERoomType.Create;
+    openModal();
   };
 
   return (
     <PageContainer>
       <StyledHeader>
-        <Button type="primary" style={{ marginBottom: 12 }} onClick={openModal}>
+        <Button type="primary" onClick={createRoom}>
           创建房间
         </Button>
+        <Button onClick={joinRoom}>加入房间</Button>
       </StyledHeader>
       <StyledContent>
         <VideoCard />
@@ -43,13 +43,15 @@ export function RoomRootPage() {
         <VideoCard />
         <VideoCard />
       </StyledContent>
-      <CreateRoomModal {...modalProps} />
+      <RoomModal type={typeRef.current.type} {...modalProps} />
     </PageContainer>
   );
 }
 
 const StyledHeader = styled.div`
   display: flex;
+  margin-bottom: 12px;
+  gap: 12px;
 `;
 
 const StyledContent = styled.div`

@@ -4,11 +4,13 @@ import styled from '@emotion/styled';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { useEffect } from 'react';
+import { authStore } from '@stores';
 import { login } from './services';
 
 export function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const authenticated = !!authStore.token;
 
   const onLogin = ({ rtcUsername, rtcPassword }: ISafeAny) => {
     login({ username: rtcUsername, password: rtcPassword })
@@ -19,10 +21,10 @@ export function LoginPage() {
   };
 
   useEffect(() => {
-    if (location.pathname === ROUTES.Login) {
+    if (authenticated && location.pathname === ROUTES.Login) {
       navigate(ROUTES.Room);
     }
-  }, [location.pathname, navigate]);
+  }, [authenticated, location.pathname, navigate]);
 
   return (
     <StyledFormWrapper>

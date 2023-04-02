@@ -3,8 +3,6 @@ import { authStore } from '@stores';
 import { DefaultLayout } from '@layouts';
 import { ROUTES } from '@constants';
 import { RoomPage, MatchPage, LoginPage } from '@pages';
-import { useEffect } from 'react';
-import { $socket } from '@utils';
 
 function Layout() {
   const authenticated = !!authStore.token;
@@ -35,11 +33,6 @@ function AppRoutes() {
 }
 
 function Root() {
-  useEffect(() => {
-    $socket.resister();
-    return () => $socket.destroy();
-  }, []);
-
   return (
     <HashRouter>
       <AppRoutes />

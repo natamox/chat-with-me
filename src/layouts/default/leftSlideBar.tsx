@@ -55,7 +55,6 @@ const StyledContainer = styled.div`
   display: flex;
   width: 320px;
   flex-direction: column;
-  height: 100%;
 `;
 
 const StyledMenu = styled(Menu)`

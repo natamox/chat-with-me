@@ -2,29 +2,12 @@ import { ESocketMessage } from '@model';
 import { authStore } from '@stores';
 import _io, { Socket } from 'socket.io-client';
 
-class WSocket {
+class RSocket {
+  isConnect = false;
+
   private io: Socket | undefined;
 
-  // constructor() {}
-
-  sendMessage = (roomId: string, message: string) => {
-    this.io?.emit(ESocketMessage.Message, { roomId, message });
-  };
-
-  create = (name: string) => {
-    this.io?.emit(ESocketMessage.Create, name);
-  };
-
-  join = (roomId: string) => {
-    console.log('roomId', roomId);
-    this.io?.emit(ESocketMessage.Join, '7682580');
-  };
-
-  match = () => {
-    this.io?.emit(ESocketMessage.Match, { userId: '1', roomId: '2' });
-  };
-
-  resister = () => {
+  constructor() {
     this.io = _io('http://127.0.0.1:4399', {
       transportOptions: {
         polling: {
@@ -37,11 +20,13 @@ class WSocket {
 
     /** ***************** 监听服务端消息 **************** */
     this.io.on(ESocketMessage.Connect, () => {
-      console.log('connect success');
+      this.isConnect = true;
+      console.log('连接成功！');
     });
 
     this.io.on(ESocketMessage.Disconnect, () => {
-      console.log('Disconnect');
+      this.isConnect = false;
+      console.log('断开连接！');
     });
 
     this.io.on(ESocketMessage.Message, (data) => {
@@ -55,6 +40,23 @@ class WSocket {
     this.io.on(ESocketMessage.Leaved, (data) => {
       console.log('leaved');
     });
+  }
+
+  sendMessage = (roomId: string, message: string) => {
+    this.io?.emit(ESocketMessage.Message, { roomId, message });
+  };
+
+  create = (name: string) => {
+    this.io?.emit(ESocketMessage.Create, name);
+  };
+
+  join = (roomId: string) => {
+    console.log('roomId', roomId);
+    this.io?.emit(ESocketMessage.Join, roomId);
+  };
+
+  match = () => {
+    this.io?.emit(ESocketMessage.Match, { userId: '1', roomId: '2' });
   };
 
   destroy = () => {
@@ -63,6 +65,4 @@ class WSocket {
   };
 }
 
-const $socket = new WSocket();
-
-export { $socket, WSocket };
+export { RSocket };

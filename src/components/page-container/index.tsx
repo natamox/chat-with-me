@@ -8,7 +8,5 @@ export function PageContainer({ children }: PropsWithChildren) {
 const StyledContainer = styled.div`
   height: 100%;
   width: 100%;
-  padding: 16px;
   overflow: hidden;
-  background: #f4f5f8;
 `;
