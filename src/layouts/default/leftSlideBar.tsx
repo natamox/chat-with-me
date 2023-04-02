@@ -9,7 +9,7 @@ export function LeftSlideBar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const activeKey = location.pathname;
+  const activeKey = location.pathname.match(/\/\w+/)?.at(0) ?? '';
 
   const onNavigate = ({ key }: { key: string }) => {
     navigate(key);
@@ -18,13 +18,13 @@ export function LeftSlideBar() {
   const menuItems: ItemType[] = [
     {
       key: ROUTES.Room,
-      label: '加入房间',
+      label: '房间',
       onClick: onNavigate,
       icon: <VideoCameraAddOutlined />,
     },
     {
       key: ROUTES.Math,
-      label: '匹配房间',
+      label: '匹配',
       onClick: onNavigate,
       icon: <VideoCameraOutlined />,
     },

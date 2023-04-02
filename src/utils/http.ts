@@ -25,7 +25,7 @@ function createHttp() {
   });
 
   client.interceptors.response.use(
-    (response: AxiosResponse) => response.data,
+    (response: AxiosResponse) => response,
     (error: AxiosError) => {
       const errCode = get(error, 'code');
       const message = get(error, 'response.data.message', '');

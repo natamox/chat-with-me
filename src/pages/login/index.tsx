@@ -1,11 +1,13 @@
 import { Form, Input, Button } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import styled from '@emotion/styled';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
+import { useEffect } from 'react';
 import { login } from './services';
 
 export function LoginPage() {
+  const location = useLocation();
   const navigate = useNavigate();
 
   const onLogin = ({ rtcUsername, rtcPassword }: ISafeAny) => {
@@ -15,6 +17,12 @@ export function LoginPage() {
       })
       .catch(console.error);
   };
+
+  useEffect(() => {
+    if (location.pathname === ROUTES.Login) {
+      navigate(ROUTES.Room);
+    }
+  }, [location.pathname, navigate]);
 
   return (
     <StyledFormWrapper>

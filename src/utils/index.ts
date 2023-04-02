@@ -1,5 +1,5 @@
 import { $http } from './http';
 import { $storage } from './storage';
-import { $socket } from './socket';
+import { $socket, WSocket } from './socket';
 
-export { $http, $socket, $storage };
+export { $http, $socket, $storage, WSocket };

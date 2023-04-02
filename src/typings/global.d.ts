@@ -22,14 +22,12 @@ interface Window {
 }
 
 interface IResponse<T> {
-  status: number;
   code: string;
   data: T;
   message: string;
 }
 
 interface IResponseList<T> {
-  status: number;
   code: string;
   data: {
     items: T[];

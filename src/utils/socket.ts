@@ -11,8 +11,8 @@ class WSocket {
     this.io?.emit(ESocketMessage.Message, { roomId, message });
   };
 
-  create = () => {
-    this.io?.emit(ESocketMessage.Create);
+  create = (name: string) => {
+    this.io?.emit(ESocketMessage.Create, name);
   };
 
   join = (roomId: string) => {
@@ -65,4 +65,4 @@ class WSocket {
 
 const $socket = new WSocket();
 
-export { $socket };
+export { $socket, WSocket };
