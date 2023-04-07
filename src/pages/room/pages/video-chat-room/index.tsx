@@ -1,15 +1,18 @@
-import { Camera, PageContainer } from '@components';
+import { LocalCamera, PageContainer, RemoteCamera } from '@components';
 import styled from '@emotion/styled';
-import { RSocket } from '@utils';
+import { RtcPeer, RtcSocket } from '@utils';
 import { useUnmount } from 'ahooks';
 import React, { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import { useObservable } from '@hooks';
+import { Empty } from 'antd';
 import { MessageBoard } from './messageBoard';
 
 export function VideoChatRoom() {
   const { id } = useParams();
+  const socket = useMemo(() => new RtcSocket(), []);
 
-  const socket = useMemo(() => new RSocket(), []);
+  const room = useObservable(socket.room$);
 
   useEffect(() => {
     if (!id) return;
@@ -23,24 +26,12 @@ export function VideoChatRoom() {
   return (
     <PageContainer>
       <StyledContainer>
-        <StyledInnerContainer>
-          <StyledCameraContainer>
-            <StyledCamera>
-              <Camera />
-            </StyledCamera>
-            <StyledCamera>
-              <Camera />
-            </StyledCamera>
-          </StyledCameraContainer>
-          <StyledCameraContainer>
-            <StyledCamera>
-              <Camera />
-            </StyledCamera>
-            <StyledCamera>
-              <Camera />
-            </StyledCamera>
-          </StyledCameraContainer>
-        </StyledInnerContainer>
+        <StyledCameraContainer>
+          <LocalCamera socket={socket} />
+          {room?.users.map((item) => (
+            <RemoteCamera key={item.id} socketId={item.socketId} socket={socket} />
+          ))}
+        </StyledCameraContainer>
         <StyledToolBarContainer>
           <MessageBoard socket={socket} roomId={id!} />
         </StyledToolBarContainer>
@@ -56,18 +47,14 @@ const StyledContainer = styled.div`
   flex-direction: column;
 `;
 
-const StyledInnerContainer = styled.div``;
-
 const StyledToolBarContainer = styled.div`
   display: flex;
   flex: 1;
 `;
 
 const StyledCameraContainer = styled.div`
-  display: flex;
-`;
-
-const StyledCamera = styled.div`
-  padding: 4px;
-  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: auto;
+  gap: 2px;
 `;

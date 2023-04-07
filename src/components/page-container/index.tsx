@@ -1,12 +1,5 @@
-import styled from '@emotion/styled';
 import React, { PropsWithChildren } from 'react';
 
 export function PageContainer({ children }: PropsWithChildren) {
-  return <StyledContainer>{children}</StyledContainer>;
+  return <div className="page-container">{children}</div>;
 }
-
-const StyledContainer = styled.div`
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-`;

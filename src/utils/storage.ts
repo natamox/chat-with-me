@@ -1,4 +1,4 @@
-import { isNil } from 'lodash';
+import { IUser } from '@model';
 
 function formatKey(key: string) {
   return `rtc_chat_${key}`.toUpperCase();
@@ -33,6 +33,15 @@ const $storage = {
   },
   set username(data: string) {
     setItem('username', data);
+  },
+  set user(data: Omit<IUser, 'socketId'>) {
+    setItem('user', {
+      id: data.id,
+      username: data.username,
+    });
+  },
+  get user() {
+    return getItem('user') as IUser;
   },
   clear() {
     removeItem('token');

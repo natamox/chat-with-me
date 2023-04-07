@@ -53,7 +53,8 @@ export function LeftSlideBar() {
 
 const StyledContainer = styled.div`
   display: flex;
-  width: 320px;
+  min-width: 160px;
+  max-width: 220px;
   flex-direction: column;
 `;
 

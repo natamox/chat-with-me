@@ -1,12 +1,12 @@
 import styled from '@emotion/styled';
-import { RSocket } from '@utils';
+import { RtcSocket } from '@utils';
 import { Input } from 'antd';
 import React, { useState } from 'react';
 
 const { TextArea } = Input;
 
 interface IProps {
-  socket: RSocket;
+  socket: RtcSocket;
   roomId: string;
 }
 export function MessageBoard({ socket, roomId }: IProps) {

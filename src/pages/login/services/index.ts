@@ -8,11 +8,11 @@ export interface ILoginParams {
 
 interface ILoginResponse {
   token: string;
-  user: Pick<ILoginParams, 'username'>;
+  user: Pick<ILoginParams, 'username'> & { id: string };
 }
 
 export const login = async (params: ILoginParams) => {
   const res = (await $http.post<IResponse<ILoginResponse>>('user/login', params)).data;
   authStore.setToken(res.data.token);
-  authStore.setUsername(res.data.user.username);
+  authStore.setUserInfo({ id: res.data.user.id, username: res.data.user.username });
 };

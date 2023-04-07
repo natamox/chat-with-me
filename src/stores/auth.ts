@@ -1,11 +1,12 @@
 import { makeAutoObservable } from 'mobx';
 
 import { $storage } from '@utils';
+import { IUser } from '@model';
 
 class AuthStore {
   // avatar = '/images/avatar.svg';
 
-  username = $storage.username;
+  user = $storage.user;
 
   token = $storage.token;
 
@@ -13,9 +14,13 @@ class AuthStore {
     makeAutoObservable(this);
   }
 
-  setUsername(username: string) {
-    this.username = username;
-    $storage.username = username;
+  // setUsername(username: string) {
+  //   this.username = username;
+  //   $storage.username = username;
+  // }
+  setUserInfo(user: Omit<IUser, 'socketId'>) {
+    this.user = user;
+    $storage.user = user;
   }
 
   setToken(token: string) {
@@ -25,7 +30,7 @@ class AuthStore {
 
   clear = () => {
     this.setToken('');
-    this.setUsername('');
+    this.setUserInfo({ id: '', username: '' });
   };
 }
 
