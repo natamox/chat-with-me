@@ -17,13 +17,13 @@ export function LeftSlideBar() {
 
   const menuItems: ItemType[] = [
     {
-      key: ROUTES.Room,
+      key: ROUTES.ROOM,
       label: '房间',
       onClick: onNavigate,
       icon: <VideoCameraAddOutlined />,
     },
     {
-      key: ROUTES.Math,
+      key: ROUTES.MATH,
       label: '匹配',
       onClick: onNavigate,
       icon: <VideoCameraOutlined />,

@@ -28,12 +28,7 @@ const $storage = {
   set token(data: string) {
     setItem('token', data);
   },
-  get username() {
-    return getItem('username') || '';
-  },
-  set username(data: string) {
-    setItem('username', data);
-  },
+
   set user(data: Omit<IUser, 'socketId'>) {
     setItem('user', {
       id: data.id,
@@ -43,6 +38,7 @@ const $storage = {
   get user() {
     return getItem('user') as IUser;
   },
+
   clear() {
     removeItem('token');
     removeItem('username');

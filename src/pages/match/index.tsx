@@ -1,5 +1,4 @@
 import { PageContainer } from '@components';
-import Loading from '@components/loading';
 import React from 'react';
 
 export function MatchPage() {

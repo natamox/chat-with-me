@@ -1,51 +1,44 @@
 import { ESocketMessage, IRoom, ISignalData, IUser } from '@model';
 import { authStore } from '@stores';
 import { message as antdMessage } from 'antd';
-import { cloneDeep, filter, map } from 'lodash';
-import { BehaviorSubject } from 'rxjs';
+import { cloneDeep, filter as _filter } from 'lodash';
+import { BehaviorSubject, filter } from 'rxjs';
 import _io, { Socket } from 'socket.io-client';
 import Peer from 'simple-peer';
 
 const CONFIG = {
-  iceServers: [
-    {
-      urls: 'stun:stun1.l.google.com:19302',
-    },
-  ],
+  iceServers: [{ urls: 'stun:stun1.l.google.com:19302' }],
 };
 
 class RtcSocket {
+  roomId;
+
   peers: { [key: string]: Peer.Instance } = {};
 
-  readonly initSocketId$ = new BehaviorSubject<string>('');
+  readonly localStream$ = new BehaviorSubject<MediaStream | null>(null);
 
   readonly peerStreams$ = new BehaviorSubject<{ [key: string]: MediaStream }>({});
-
-  readonly isConnect$ = new BehaviorSubject<boolean>(false);
 
   readonly room$ = new BehaviorSubject<IRoom | undefined>(undefined);
 
   readonly io: Socket | undefined;
 
-  constructor() {
-    this.io = _io('http://127.0.0.1:4399', {
-      transportOptions: {
-        polling: {
-          extraHeaders: {
-            Authorization: `Bearer ${authStore.token}`,
-          },
-        },
-      },
+  constructor(roomId: string) {
+    this.roomId = roomId;
+
+    this.io = _io(import.meta.env.VITE_SERVER_HOST, {
+      transportOptions: { polling: { extraHeaders: { Authorization: `Bearer ${authStore.token}` } } },
     });
+
+    // 进入页面初始化本地媒体流之后发起加入房间连接
+    this.localStream$.pipe(filter((stream) => stream !== null)).subscribe(() => this.joinRoom());
 
     /** ***************** 监听服务端消息 **************** */
     this.io.on(ESocketMessage.Connect, () => {
-      this.isConnect$.next(true);
       console.log('连接成功！');
     });
 
     this.io.on(ESocketMessage.Disconnect, () => {
-      this.isConnect$.next(false);
       console.log('断开连接！');
     });
 
@@ -56,7 +49,7 @@ class RtcSocket {
     this.io.on(ESocketMessage.Joined, (room: IRoom) => {
       const deepRoom = cloneDeep(room);
       // 过滤掉自己
-      deepRoom.users = filter(room.users, (item) => item.id !== authStore.user.id);
+      deepRoom.users = _filter(room.users, (item) => item.id !== authStore.user.id);
       this.room$.next(deepRoom);
     });
 
@@ -65,19 +58,21 @@ class RtcSocket {
     });
 
     // 请求 webRTC 连接
-    this.io.on(ESocketMessage.PeerRequest, (id: string) => {
-      this.preparePeerConnection(id, false);
-      // 通知对方我已经准备完毕可以进行webRTC连接
-      this.io!.emit(ESocketMessage.PeerConn, id);
+    this.io.on(ESocketMessage.PeerRequest, (user: IUser) => {
+      this.preparePeerConnection(user, false);
+      // 反馈对方可以进行 webRTC 连接
+      console.log('user.socketId', user.socketId);
+      this.io!.emit(ESocketMessage.PeerConn, user.socketId);
     });
 
     // 准备webRTC连接
-    this.io.on(ESocketMessage.PeerConn, (id: string) => {
-      this.preparePeerConnection(id, true);
+    this.io.on(ESocketMessage.PeerConn, (user: IUser) => {
+      this.preparePeerConnection(user, true);
     });
 
     this.io.on(ESocketMessage.Signal, (data: ISignalData) => {
-      this.peers[data.socketId].signal(data.signal);
+      console.log('收到信令', data);
+      this.peers[data.user.id].signal(data.signal);
     });
 
     this.io.on(ESocketMessage.Warn, (data) => {
@@ -93,43 +88,38 @@ class RtcSocket {
     this.io?.emit(ESocketMessage.Message, { roomId, message });
   };
 
-  join = (roomId: string) => {
-    this.io?.emit(ESocketMessage.Join, roomId);
+  joinRoom = () => {
+    this.io?.emit(ESocketMessage.Join, this.roomId);
   };
 
   match = () => {
     this.io?.emit(ESocketMessage.Match, { userId: '1', roomId: '2' });
   };
 
-  preparePeerConnection = (socketId: string, isInitiator: boolean) => {
-    if (isInitiator) {
-      console.log('准备连接', socketId, isInitiator);
-      this.initSocketId$.next(socketId);
-    }
-    console.log('准备连接', socketId, isInitiator);
-
+  preparePeerConnection = ({ id, socketId, username }: IUser, isInitiator: boolean) => {
+    console.log('准备连接', username, isInitiator);
     // 实例化对等连接对象
-    this.peers[socketId] = new Peer({
+    this.peers[id] = new Peer({
       initiator: isInitiator,
       config: CONFIG,
+      stream: this.localStream$.value!,
     });
-
     // 信令数据传递
-    this.peers[socketId].on(ESocketMessage.Signal, (data) => {
-      const signalData: ISignalData = { signal: data, socketId };
+    this.peers[id].on(ESocketMessage.Signal, (data) => {
+      const signalData = { signal: data, socketId };
+      console.log('信令数据传递', signalData);
       this.io?.emit(ESocketMessage.Signal, signalData);
     });
-
     // 获取媒体流stream
-    this.peers[socketId].on(ESocketMessage.Stream, (stream) => {
-      console.log('成功获取远程Stream', stream);
-      this.peerStreams$.next({ ...this.peerStreams$.value, [socketId]: stream });
+    this.peers[id].on(ESocketMessage.Stream, (stream) => {
+      console.log('成功获取远程 stream', stream);
+      this.peerStreams$.next({ ...this.peerStreams$.value, [id]: stream });
     });
-
     console.log(this.peers);
   };
 
   destroy = () => {
+    console.log('销毁');
     this.io?.disconnect();
   };
 }

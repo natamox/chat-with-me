@@ -1,5 +1,5 @@
-import { Form, Input, Button } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Button, Form, Input } from 'antd';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import styled from '@emotion/styled';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
@@ -15,14 +15,14 @@ export function LoginPage() {
   const onLogin = ({ rtcUsername, rtcPassword }: ISafeAny) => {
     login({ username: rtcUsername, password: rtcPassword })
       .then(() => {
-        navigate(ROUTES.Room);
+        navigate(ROUTES.ROOM);
       })
       .catch(console.error);
   };
 
   useEffect(() => {
-    if (authenticated && location.pathname === ROUTES.Login) {
-      navigate(ROUTES.Room);
+    if (authenticated && location.pathname === ROUTES.LOGIN) {
+      navigate(ROUTES.ROOM);
     }
   }, [authenticated, location.pathname, navigate]);
 

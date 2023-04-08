@@ -1,23 +1,19 @@
 import { LocalCamera, PageContainer, RemoteCamera } from '@components';
 import styled from '@emotion/styled';
-import { RtcPeer, RtcSocket } from '@utils';
+import { RtcSocket } from '@utils';
 import { useUnmount } from 'ahooks';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useObservable } from '@hooks';
-import { Empty } from 'antd';
 import { MessageBoard } from './messageBoard';
 
 export function VideoChatRoom() {
-  const { id } = useParams();
-  const socket = useMemo(() => new RtcSocket(), []);
+  const { id = '' } = useParams();
+  const socket = useMemo(() => new RtcSocket(id), [id]);
 
   const room = useObservable(socket.room$);
 
-  useEffect(() => {
-    if (!id) return;
-    socket.join(id);
-  }, [id, socket]);
+  console.log(room);
 
   useUnmount(() => {
     socket.destroy();
@@ -29,12 +25,12 @@ export function VideoChatRoom() {
         <StyledCameraContainer>
           <LocalCamera socket={socket} />
           {room?.users.map((item) => (
-            <RemoteCamera key={item.id} socketId={item.socketId} socket={socket} />
+            <RemoteCamera key={item.id} item={item} socket={socket} />
           ))}
         </StyledCameraContainer>
-        <StyledToolBarContainer>
-          <MessageBoard socket={socket} roomId={id!} />
-        </StyledToolBarContainer>
+        {/* <StyledToolBarContainer> */}
+        {/*  <MessageBoard socket={socket} /> */}
+        {/* </StyledToolBarContainer> */}
       </StyledContainer>
     </PageContainer>
   );
@@ -43,7 +39,7 @@ export function VideoChatRoom() {
 const StyledContainer = styled.div`
   display: flex;
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
   flex-direction: column;
 `;
 

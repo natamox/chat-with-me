@@ -1,6 +1,6 @@
 import { INPUT_RULES } from '@constants';
 import { ERoomType } from '@pages/room/models';
-import { IRoomParams, createRoom } from '@pages/room/services';
+import { createRoom, IRoomParams } from '@pages/room/services';
 import { Form, Input, Modal } from 'antd';
 import React, { useState } from 'react';
 
@@ -39,8 +39,15 @@ export function RoomModal({ visible, type, onCancel, onComplete }: IProps) {
           </Form.Item>
         )}
         {type === ERoomType.Join && (
-          <Form.Item name="roomId" label="房间号" rules={INPUT_RULES.required().rules}>
-            <Input placeholder={INPUT_RULES.required().placeholder} />
+          <Form.Item
+            name="roomId"
+            label="房间号"
+            rules={[
+              { required: true, message: '房间号必填！' },
+              { pattern: /^\d{7}$/, message: '请确认房间号格式正确！' },
+            ]}
+          >
+            <Input placeholder="房间号由七位数字组成！" />
           </Form.Item>
         )}
       </Form>

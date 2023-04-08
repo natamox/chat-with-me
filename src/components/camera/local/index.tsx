@@ -1,9 +1,5 @@
-import styled from '@emotion/styled';
-import Webcam from 'react-webcam';
-import { useObservable } from '@hooks';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ESocketMessage } from '@model';
-import { RtcPeer, RtcSocket } from '@utils';
+import { RtcSocket } from '@utils';
+import { authStore } from '@stores';
 import { BaseCamera } from '../base';
 
 interface IProps {
@@ -11,19 +7,21 @@ interface IProps {
   // peer: RtcPeer;
   style?: React.CSSProperties;
 }
+
 export function LocalCamera({ socket, style }: IProps) {
-  const initSocketId = useObservable(socket.initSocketId$);
-  const streamRef = useRef<{ stream: MediaStream | null }>({ stream: null });
+  // const initSocketId = useObservable(socket.initSocketId$);
+  // const streamRef = useRef<{ stream: MediaStream | null }>({ stream: null });
 
   const onCallBack = async (stream: MediaStream) => {
-    streamRef.current.stream = stream;
+    // streamRef.current.stream = stream;
+    socket.localStream$.next(stream);
   };
 
-  useEffect(() => {
-    if (streamRef.current.stream && initSocketId) {
-      socket.peers[initSocketId].addStream(streamRef.current.stream);
-    }
-  }, [initSocketId, socket.peers]);
+  // useEffect(() => {
+  //   if (streamRef.current.stream && initSocketId) {
+  //     socket.peers[initSocketId].addStream(streamRef.current.stream);
+  //   }
+  // }, [initSocketId, socket.peers]);
 
-  return <BaseCamera onUserMedia={onCallBack} />;
+  return <BaseCamera user={authStore.user} onUserMedia={onCallBack} />;
 }

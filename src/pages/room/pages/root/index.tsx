@@ -1,7 +1,7 @@
 import { PageContainer } from '@components';
 import styled from '@emotion/styled';
-import { Button, Modal } from 'antd';
-import React, { useEffect, useRef } from 'react';
+import { Button } from 'antd';
+import React, { useRef } from 'react';
 import { useModal } from '@hooks';
 import { useNavigate } from 'react-router-dom';
 import { ERoomType } from '@pages/room/models';

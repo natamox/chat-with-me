@@ -39,5 +39,5 @@ export interface IRoom {
 
 export interface ISignalData {
   signal: SignalData;
-  socketId: string;
+  user: IUser;
 }

@@ -7,15 +7,14 @@ const { TextArea } = Input;
 
 interface IProps {
   socket: RtcSocket;
-  roomId: string;
 }
-export function MessageBoard({ socket, roomId }: IProps) {
+export function MessageBoard({ socket }: IProps) {
   const [value, setValue] = useState('');
 
   const onSendMessage = () => {
     setValue((current) => {
       const _value = current.replace(/\n/g, '');
-      socket.sendMessage(roomId, _value);
+      socket.sendMessage(socket.roomId, _value);
       return _value;
     });
     // console.log('first', e.target.value.replace(/\n/g, ''));

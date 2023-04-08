@@ -1,5 +1,5 @@
 import { LoginPage } from './login';
 import { MatchPage } from './match';
-import { RoomPage } from './room';
+import { RoomPageRoutes } from './room';
 
-export { RoomPage, MatchPage, LoginPage };
+export { RoomPageRoutes, MatchPage, LoginPage };
