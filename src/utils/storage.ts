@@ -5,7 +5,7 @@ function formatKey(key: string) {
 }
 
 function getItem(key: string) {
-  const str = localStorage.getItem(formatKey(key)) as string;
+  const str = sessionStorage.getItem(formatKey(key)) as string;
   try {
     return JSON.parse(str);
   } catch (e) {
@@ -14,11 +14,11 @@ function getItem(key: string) {
 }
 
 function removeItem(key: string) {
-  localStorage.removeItem(formatKey(key));
+  sessionStorage.removeItem(formatKey(key));
 }
 
 function setItem(key: string, data: ISafeAny) {
-  localStorage.setItem(formatKey(key), JSON.stringify(data));
+  sessionStorage.setItem(formatKey(key), JSON.stringify(data));
 }
 
 const $storage = {

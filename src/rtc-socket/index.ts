@@ -1,25 +1,26 @@
-import { ESocketMessage, IRoom, ISignalData, IUser } from '@model';
+import { ESocketMessage, IRoom, IRoomUpdateData, ISignalData, IUser } from '@model';
 import { authStore } from '@stores';
 import { message as antdMessage } from 'antd';
-import { cloneDeep, filter as _filter } from 'lodash';
+import { cloneDeep, values } from 'lodash';
 import { BehaviorSubject, filter } from 'rxjs';
 import _io, { Socket } from 'socket.io-client';
 import Peer from 'simple-peer';
+import { $video } from '@utils';
 
 const CONFIG = {
   iceServers: [{ urls: 'stun:stun1.l.google.com:19302' }],
 };
 
 class RtcSocket {
-  roomId;
+  readonly roomId;
 
-  peers: { [key: string]: Peer.Instance } = {};
+  readonly peers: { [key: string]: Peer.Instance } = {};
+
+  readonly peerStreams: { [key: string]: MediaStream } = {};
 
   readonly localStream$ = new BehaviorSubject<MediaStream | null>(null);
 
-  readonly peerStreams$ = new BehaviorSubject<{ [key: string]: MediaStream }>({});
-
-  readonly room$ = new BehaviorSubject<IRoom | undefined>(undefined);
+  readonly users$ = new BehaviorSubject<IUser[]>([]); // 除了自己的房间其他用户
 
   readonly io: Socket | undefined;
 
@@ -35,33 +36,36 @@ class RtcSocket {
 
     /** ***************** 监听服务端消息 **************** */
     this.io.on(ESocketMessage.Connect, () => {
-      console.log('连接成功！');
+      // console.log('连接成功！');
     });
 
     this.io.on(ESocketMessage.Disconnect, () => {
-      console.log('断开连接！');
+      // console.log('断开连接！');
     });
 
     this.io.on(ESocketMessage.Message, (data) => {
       console.log(data);
     });
 
-    this.io.on(ESocketMessage.Joined, (room: IRoom) => {
-      const deepRoom = cloneDeep(room);
-      // 过滤掉自己
-      deepRoom.users = _filter(room.users, (item) => item.id !== authStore.user.id);
-      this.room$.next(deepRoom);
+    this.io.on(ESocketMessage.Joined, ({ room, user }: IRoomUpdateData) => {
+      this.roomUpdate(room.users);
+      if (authStore.user.id !== user.id) {
+        antdMessage.info(`${user.username} 加入房间🎉`);
+      }
     });
 
-    this.io.on(ESocketMessage.Leaved, (data) => {
-      console.log('leaved');
+    this.io.on(ESocketMessage.Leaved, ({ room, user }: IRoomUpdateData) => {
+      this.roomUpdate(room.users);
+      this.peers[user.id].destroy();
+      delete this.peers[user.id];
+      delete this.peerStreams[user.id];
+      antdMessage.info(`${user.username} 离开房间`);
     });
 
     // 请求 webRTC 连接
     this.io.on(ESocketMessage.PeerRequest, (user: IUser) => {
       this.preparePeerConnection(user, false);
       // 反馈对方可以进行 webRTC 连接
-      console.log('user.socketId', user.socketId);
       this.io!.emit(ESocketMessage.PeerConn, user.socketId);
     });
 
@@ -71,7 +75,6 @@ class RtcSocket {
     });
 
     this.io.on(ESocketMessage.Signal, (data: ISignalData) => {
-      console.log('收到信令', data);
       this.peers[data.user.id].signal(data.signal);
     });
 
@@ -83,6 +86,13 @@ class RtcSocket {
       antdMessage.info(data);
     });
   }
+
+  roomUpdate = (users: IRoom['users']) => {
+    const cloneUsers = cloneDeep(users);
+    // 过滤掉自己
+    delete cloneUsers[authStore.user.id];
+    this.users$.next(values(cloneUsers));
+  };
 
   sendMessage = (roomId: string, message: string) => {
     this.io?.emit(ESocketMessage.Message, { roomId, message });
@@ -96,8 +106,7 @@ class RtcSocket {
     this.io?.emit(ESocketMessage.Match, { userId: '1', roomId: '2' });
   };
 
-  preparePeerConnection = ({ id, socketId, username }: IUser, isInitiator: boolean) => {
-    console.log('准备连接', username, isInitiator);
+  preparePeerConnection = ({ id, socketId }: IUser, isInitiator: boolean) => {
     // 实例化对等连接对象
     this.peers[id] = new Peer({
       initiator: isInitiator,
@@ -107,19 +116,16 @@ class RtcSocket {
     // 信令数据传递
     this.peers[id].on(ESocketMessage.Signal, (data) => {
       const signalData = { signal: data, socketId };
-      console.log('信令数据传递', signalData);
       this.io?.emit(ESocketMessage.Signal, signalData);
     });
     // 获取媒体流stream
     this.peers[id].on(ESocketMessage.Stream, (stream) => {
-      console.log('成功获取远程 stream', stream);
-      this.peerStreams$.next({ ...this.peerStreams$.value, [id]: stream });
+      this.peerStreams[id] = stream;
+      $video.addStream(id, stream);
     });
-    console.log(this.peers);
   };
 
   destroy = () => {
-    console.log('销毁');
     this.io?.disconnect();
   };
 }

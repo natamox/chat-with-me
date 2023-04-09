@@ -38,6 +38,8 @@
     "@typescript-eslint/no-non-null-assertion": "off",
     "consistent-return": "off",
     "@typescript-eslint/naming-convention": "off",
-    "react/require-default-props": "off"
+    "react/require-default-props": "off",
+    "react/display-name": "off",
+    "jsx-a11y/media-has-caption": "off"
   }
 }

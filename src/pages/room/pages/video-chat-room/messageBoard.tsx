@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { RtcSocket } from '@utils';
+import { RtcSocket } from '@rtc-socket';
 import { Input } from 'antd';
 import React, { useState } from 'react';
 
@@ -17,18 +17,24 @@ export function MessageBoard({ socket }: IProps) {
       socket.sendMessage(socket.roomId, _value);
       return _value;
     });
-    // console.log('first', e.target.value.replace(/\n/g, ''));
   };
 
   return (
     <StyledContainer>
-      MessageBoard
-      <StyledTextArea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onPressEnter={onSendMessage}
-        autoSize={{ minRows: 2, maxRows: 2 }}
-      />
+      <StyledMessageContainer>
+        <div style={{ height: 400 }}>123</div>
+        <div style={{ height: 400 }}>123</div>
+        <div style={{ height: 400 }}>123</div>
+        <div style={{ height: 400 }}>123</div>
+      </StyledMessageContainer>
+      <StyledToolbarContainer>
+        <StyledTextArea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onPressEnter={onSendMessage}
+          autoSize={{ minRows: 2, maxRows: 2 }}
+        />
+      </StyledToolbarContainer>
     </StyledContainer>
   );
 }
@@ -36,7 +42,23 @@ export function MessageBoard({ socket }: IProps) {
 const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
   flex: 1;
+`;
+
+const StyledMessageContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 2px 2px 10px #ddd;
+`;
+
+const StyledToolbarContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 120px;
 `;
 
 const StyledTextArea = styled(TextArea)`

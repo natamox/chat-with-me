@@ -1,40 +1,31 @@
 import { EyeOutlined } from '@ant-design/icons';
 import styled from '@emotion/styled';
-import React, { forwardRef, Ref } from 'react';
-import Webcam from 'react-webcam';
+import React from 'react';
 import { IUser } from '@model';
 
-const constraints = {
-  width: { min: 640, ideal: 1280 },
-  height: { min: 480, ideal: 720 },
-  advanced: [{ width: 1920, height: 1280 }, { aspectRatio: 1.333 }],
-};
-
 interface IProps {
-  user: Partial<IUser>;
-  onUserMedia?: (stream: MediaStream) => void;
+  user?: Partial<IUser>;
 }
-export const BaseCamera = forwardRef(({ user, onUserMedia }: IProps, ref: Ref<Webcam>) => {
-  const a = (stream: MediaStream) => {};
-
+export function BaseCamera({ user }: IProps) {
   return (
     <StyledContainer>
-      <Webcam
-        onUserMedia={onUserMedia}
-        videoConstraints={constraints}
-        ref={ref}
-        style={{ width: '100%', height: '100%' }}
-      />
+      <StyledVideo id={`camera_${user?.id}`} autoPlay playsInline />
       <span style={{ textAlign: 'center' }}>{user?.username}</span>
     </StyledContainer>
   );
-});
+}
 
 const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
+`;
+
+const StyledVideo = styled.video`
+  width: 100%;
+  height: 100%;
+  /* aspect-ratio: 16 / 9; */
 `;
 
 const StyledToolbar = styled.div`
@@ -45,5 +36,3 @@ const StyledEyeIcon = styled(EyeOutlined)`
   font-size: 20px;
   color: #fff;
 `;
-
-BaseCamera.displayName = 'BaseCamera';

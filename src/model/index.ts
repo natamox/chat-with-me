@@ -3,10 +3,11 @@ import { SignalData } from 'simple-peer';
 export enum ESocketMessage {
   Connect = 'connect',
   Disconnect = 'disconnect',
-  Joined = 'joined',
   Leaved = 'leaved',
+  Joined = 'joined',
 
   Join = 'join',
+  Leave = 'leave',
   Create = 'create',
   Match = 'match',
   Message = 'message',
@@ -34,7 +35,12 @@ export interface IUser {
 export interface IRoom {
   roomId: string;
   roomName: string;
-  users: IUser[];
+  users: { [key: string]: IUser };
+}
+
+export interface IRoomUpdateData {
+  room: IRoom;
+  user: IUser;
 }
 
 export interface ISignalData {

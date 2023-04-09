@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import { STORES } from '@stores';
 import Root from './root';
+import 'virtual:svg-icons-register';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);

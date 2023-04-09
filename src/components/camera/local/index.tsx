@@ -1,27 +1,29 @@
-import { RtcSocket } from '@utils';
+import { $video } from '@utils';
 import { authStore } from '@stores';
+import { useMount } from 'ahooks';
+import { RtcSocket } from '@rtc-socket';
 import { BaseCamera } from '../base';
+
+const DEFAULT_CONSTRAINTS: MediaStreamConstraints = {
+  audio: false,
+  video: true,
+};
 
 interface IProps {
   socket: RtcSocket;
-  // peer: RtcPeer;
-  style?: React.CSSProperties;
 }
 
-export function LocalCamera({ socket, style }: IProps) {
-  // const initSocketId = useObservable(socket.initSocketId$);
-  // const streamRef = useRef<{ stream: MediaStream | null }>({ stream: null });
-
-  const onCallBack = async (stream: MediaStream) => {
-    // streamRef.current.stream = stream;
+export function LocalCamera({ socket }: IProps) {
+  // 获取本地音视频流
+  const getVideoStream = async (options: MediaStreamConstraints = DEFAULT_CONSTRAINTS) => {
+    const stream = await navigator.mediaDevices.getUserMedia(options);
+    $video.addStream(authStore.user.id, stream);
     socket.localStream$.next(stream);
   };
 
-  // useEffect(() => {
-  //   if (streamRef.current.stream && initSocketId) {
-  //     socket.peers[initSocketId].addStream(streamRef.current.stream);
-  //   }
-  // }, [initSocketId, socket.peers]);
+  useMount(() => {
+    getVideoStream();
+  });
 
-  return <BaseCamera user={authStore.user} onUserMedia={onCallBack} />;
+  return <BaseCamera user={authStore.user} />;
 }

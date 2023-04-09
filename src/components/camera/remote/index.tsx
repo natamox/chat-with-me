@@ -1,26 +1,26 @@
-import { RtcSocket } from '@utils';
-import Webcam from 'react-webcam';
-import { useEffect, useRef } from 'react';
-import { useObservable } from '@hooks';
+import { memo, useEffect } from 'react';
 import { IUser } from '@model';
+import NoUserSvg from '@assets/icons/no-user.svg';
+import styled from '@emotion/styled';
+import { $video } from '@utils';
+import { RtcSocket } from '@rtc-socket';
 import { BaseCamera } from '../base';
 
 interface IProps {
   socket: RtcSocket;
-  item: IUser;
-  style?: React.CSSProperties;
+  user?: IUser;
 }
-export function RemoteCamera({ socket, item, style }: IProps) {
-  const { id, socketId } = item;
-  const peerStreams = useObservable(socket.peerStreams$);
-
-  const camRef = useRef<Webcam>(null);
-
+export const RemoteCamera = memo(({ socket, user }: IProps) => {
   useEffect(() => {
-    if (peerStreams?.[id]) {
-      camRef.current!.video!.srcObject = peerStreams[id];
-    }
-  }, [peerStreams, id]);
+    if (!user) return;
+    console.log('wffect');
+    $video.addStream(user?.id, socket.peerStreams[user?.id]);
+  }, [socket.peerStreams, user]);
 
-  return <BaseCamera user={item} ref={camRef} />;
-}
+  return user ? <BaseCamera user={user} /> : <StyledImg src={NoUserSvg} alt="等待加入......" />;
+});
+
+const StyledImg = styled.img`
+  margin: auto;
+  width: 60%;
+`;

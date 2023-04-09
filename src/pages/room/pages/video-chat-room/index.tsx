@@ -1,19 +1,17 @@
 import { LocalCamera, PageContainer, RemoteCamera } from '@components';
 import styled from '@emotion/styled';
-import { RtcSocket } from '@utils';
 import { useUnmount } from 'ahooks';
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useObservable } from '@hooks';
+import { RtcSocket } from '@rtc-socket';
 import { MessageBoard } from './messageBoard';
 
 export function VideoChatRoom() {
   const { id = '' } = useParams();
   const socket = useMemo(() => new RtcSocket(id), [id]);
 
-  const room = useObservable(socket.room$);
-
-  console.log(room);
+  const users = useObservable(socket.users$, []);
 
   useUnmount(() => {
     socket.destroy();
@@ -24,13 +22,11 @@ export function VideoChatRoom() {
       <StyledContainer>
         <StyledCameraContainer>
           <LocalCamera socket={socket} />
-          {room?.users.map((item) => (
-            <RemoteCamera key={item.id} item={item} socket={socket} />
-          ))}
+          <RemoteCamera socket={socket} user={users?.at(0)} />
+          <RemoteCamera socket={socket} user={users?.at(1)} />
+          <RemoteCamera socket={socket} user={users?.at(2)} />
         </StyledCameraContainer>
-        {/* <StyledToolBarContainer> */}
-        {/*  <MessageBoard socket={socket} /> */}
-        {/* </StyledToolBarContainer> */}
+        <MessageBoard socket={socket} />
       </StyledContainer>
     </PageContainer>
   );

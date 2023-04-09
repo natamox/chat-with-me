@@ -1,5 +1,5 @@
 import { $http } from './http';
 import { $storage } from './storage';
-import { RtcSocket } from './socket';
+import { $video } from './video';
 
-export { $http, $storage, RtcSocket };
+export { $http, $storage, $video };
