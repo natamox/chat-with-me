@@ -1,6 +1,7 @@
 import { LogoutOutlined, UserOutlined, VideoCameraAddOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import { ROUTES } from '@constants';
 import styled from '@emotion/styled';
+import { authStore } from '@stores';
 import { Menu } from 'antd';
 import { ItemType } from 'antd/es/menu/hooks/useItems';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -13,6 +14,11 @@ export function LeftSlideBar() {
 
   const onNavigate = ({ key }: { key: string }) => {
     navigate(key);
+  };
+
+  const onLogOut = () => {
+    authStore.clear();
+    onNavigate({ key: ROUTES.LOGIN });
   };
 
   const menuItems: ItemType[] = [
@@ -31,14 +37,16 @@ export function LeftSlideBar() {
   ];
 
   const userItems: ItemType[] = [
+    // {
+    //   key: ROUTES.USER,
+    //   label: '用户',
+    //   onClick: onNavigate,
+    //   icon: <UserOutlined />,
+    // },
     {
-      key: 'uer',
-      label: '用户',
-      icon: <UserOutlined />,
-    },
-    {
-      key: 'out',
+      key: ROUTES.LOGIN,
       label: '登出',
+      onClick: onLogOut,
       icon: <LogoutOutlined />,
     },
   ];
@@ -46,7 +54,7 @@ export function LeftSlideBar() {
   return (
     <StyledContainer>
       <StyledMenu items={menuItems} selectedKeys={[activeKey]} />
-      <StyledUserMenu items={userItems} selectedKeys={[]} />
+      <StyledUserMenu items={userItems} selectedKeys={[activeKey]} />
     </StyledContainer>
   );
 }

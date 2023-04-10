@@ -29,10 +29,11 @@ const $storage = {
     setItem('token', data);
   },
 
-  set user(data: Omit<IUser, 'socketId'>) {
+  set user(data: IUser) {
     setItem('user', {
       id: data.id,
       username: data.username,
+      nickname: data.nickname,
     });
   },
   get user() {

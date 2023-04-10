@@ -1,23 +1,29 @@
 import { Button, Form, Input } from 'antd';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
+import { FontSizeOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
 import styled from '@emotion/styled';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { authStore } from '@stores';
-import { login } from './services';
+import { login, register } from './services';
 
 export function LoginPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const authenticated = !!authStore.token;
+  const [isLogin, setIsLogin] = useState(true);
 
-  const onLogin = ({ rtcUsername, rtcPassword }: ISafeAny) => {
-    login({ username: rtcUsername, password: rtcPassword })
-      .then(() => {
-        navigate(ROUTES.ROOM);
-      })
-      .catch(console.error);
+  const onLogin = async ({ rtcUsername, rtcNickname, rtcPassword }: ISafeAny) => {
+    try {
+      if (isLogin) {
+        await login({ username: rtcUsername, password: rtcPassword });
+        return navigate(ROUTES.ROOM);
+      }
+      await register({ username: rtcUsername, password: rtcPassword, nickname: rtcNickname });
+      setIsLogin(true);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -29,19 +35,27 @@ export function LoginPage() {
   return (
     <StyledFormWrapper>
       <StyledFormContainer>
-        <StyledFormTitle>Login</StyledFormTitle>
+        <StyledFormTitle>{isLogin ? '登录' : '注册'}</StyledFormTitle>
         <Form onFinish={onLogin}>
-          <Form.Item name="rtcUsername" rules={[{ required: true, message: 'Please input your Username!' }]}>
-            <Input placeholder="Username" prefix={<UserOutlined />} />
+          <Form.Item name="rtcUsername" rules={[{ required: true, message: '用户名必填' }]}>
+            <Input placeholder="用户名" prefix={<UserOutlined />} />
           </Form.Item>
-          <Form.Item name="rtcPassword" rules={[{ required: true, message: 'Please input your Password!' }]}>
-            <Input.Password placeholder="Password" prefix={<LockOutlined />} />
+          {!isLogin && (
+            <Form.Item name="rtcNickname" rules={[{ required: true, message: '昵称必填' }]}>
+              <Input placeholder="昵称" prefix={<FontSizeOutlined />} />
+            </Form.Item>
+          )}
+          <Form.Item name="rtcPassword" rules={[{ required: true, message: '密码必填' }]}>
+            <Input.Password placeholder="密码" prefix={<LockOutlined />} />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
-              Log in
+              {isLogin ? '登录' : '注册'}
             </Button>
           </Form.Item>
+          <Button type="link" style={{ float: 'right' }} onClick={() => setIsLogin(!isLogin)}>
+            {isLogin ? '去注册' : '去登录'}
+          </Button>
         </Form>
       </StyledFormContainer>
     </StyledFormWrapper>

@@ -1,4 +1,4 @@
-import { ESocketMessage, IRoom, IRoomUpdateData, ISignalData, IUser } from '@model';
+import { ESocketMessage, IMessage, IRoom, IRoomUpdateData, IRoomUser, ISignalData } from '@model';
 import { authStore } from '@stores';
 import { message as antdMessage } from 'antd';
 import { cloneDeep, values } from 'lodash';
@@ -6,6 +6,8 @@ import { BehaviorSubject, filter } from 'rxjs';
 import _io, { Socket } from 'socket.io-client';
 import Peer from 'simple-peer';
 import { $video } from '@utils';
+import { nanoid } from 'nanoid';
+import dayjs from 'dayjs';
 
 const CONFIG = {
   iceServers: [{ urls: 'stun:stun1.l.google.com:19302' }],
@@ -14,13 +16,17 @@ const CONFIG = {
 class RtcSocket {
   readonly roomId;
 
+  readonly room$ = new BehaviorSubject<IRoom | undefined>(undefined);
+
   readonly peers: { [key: string]: Peer.Instance } = {};
 
   readonly peerStreams: { [key: string]: MediaStream } = {};
 
   readonly localStream$ = new BehaviorSubject<MediaStream | null>(null);
 
-  readonly users$ = new BehaviorSubject<IUser[]>([]); // 除了自己的房间其他用户
+  readonly users$ = new BehaviorSubject<IRoomUser[]>([]); // 除了自己的房间其他用户
+
+  readonly message$ = new BehaviorSubject<IMessage[]>([]);
 
   readonly io: Socket | undefined;
 
@@ -43,34 +49,45 @@ class RtcSocket {
       // console.log('断开连接！');
     });
 
-    this.io.on(ESocketMessage.Message, (data) => {
-      console.log(data);
+    this.io.on(ESocketMessage.Message, (data: IMessage) => {
+      this.message$.next([...this.message$.value, data]);
     });
 
     this.io.on(ESocketMessage.Joined, ({ room, user }: IRoomUpdateData) => {
-      this.roomUpdate(room.users);
+      this.userUpdate(room.users);
       if (authStore.user.id !== user.id) {
-        antdMessage.info(`${user.username} 加入房间🎉`);
+        antdMessage.info(`${user.nickname} 加入房间🎉`);
+      } else {
+        this.room$.next(room);
+        this.message$.next(room.message);
       }
     });
 
     this.io.on(ESocketMessage.Leaved, ({ room, user }: IRoomUpdateData) => {
-      this.roomUpdate(room.users);
+      this.userUpdate(room.users);
       this.peers[user.id].destroy();
       delete this.peers[user.id];
       delete this.peerStreams[user.id];
-      antdMessage.info(`${user.username} 离开房间`);
+      antdMessage.info(`${user.nickname} 离开房间`);
+    });
+
+    this.io.on(ESocketMessage.OpenCamera, (userId: string) => {
+      $video.updateStream(userId, this.peerStreams[userId]);
+    });
+
+    this.io.on(ESocketMessage.CloseCamera, (userId: string) => {
+      $video.updateStream(userId, null);
     });
 
     // 请求 webRTC 连接
-    this.io.on(ESocketMessage.PeerRequest, (user: IUser) => {
+    this.io.on(ESocketMessage.PeerRequest, (user: IRoomUser) => {
       this.preparePeerConnection(user, false);
       // 反馈对方可以进行 webRTC 连接
       this.io!.emit(ESocketMessage.PeerConn, user.socketId);
     });
 
     // 准备webRTC连接
-    this.io.on(ESocketMessage.PeerConn, (user: IUser) => {
+    this.io.on(ESocketMessage.PeerConn, (user: IRoomUser) => {
       this.preparePeerConnection(user, true);
     });
 
@@ -87,26 +104,37 @@ class RtcSocket {
     });
   }
 
-  roomUpdate = (users: IRoom['users']) => {
+  userUpdate = (users: IRoom['users']) => {
     const cloneUsers = cloneDeep(users);
-    // 过滤掉自己
     delete cloneUsers[authStore.user.id];
     this.users$.next(values(cloneUsers));
   };
 
-  sendMessage = (roomId: string, message: string) => {
-    this.io?.emit(ESocketMessage.Message, { roomId, message });
+  sendMessage = (text = '') => {
+    const id = nanoid();
+    const time = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    const message: IMessage = { id, time, text, user: authStore.user };
+    this.io?.emit(ESocketMessage.Message, { message, roomId: this.roomId });
+    this.message$.next([...this.message$.value, message]);
   };
 
   joinRoom = () => {
     this.io?.emit(ESocketMessage.Join, this.roomId);
   };
 
-  match = () => {
-    this.io?.emit(ESocketMessage.Match, { userId: '1', roomId: '2' });
+  openCamera = () => {
+    this.io?.emit(ESocketMessage.OpenCamera, this.roomId);
   };
 
-  preparePeerConnection = ({ id, socketId }: IUser, isInitiator: boolean) => {
+  closeCamera = () => {
+    this.io?.emit(ESocketMessage.CloseCamera, this.roomId);
+  };
+
+  // match = () => {
+  //   this.io?.emit(ESocketMessage.Match, { userId: '1', roomId: '2' });
+  // };
+
+  preparePeerConnection = ({ id, socketId }: IRoomUser, isInitiator: boolean) => {
     // 实例化对等连接对象
     this.peers[id] = new Peer({
       initiator: isInitiator,
@@ -121,7 +149,8 @@ class RtcSocket {
     // 获取媒体流stream
     this.peers[id].on(ESocketMessage.Stream, (stream) => {
       this.peerStreams[id] = stream;
-      $video.addStream(id, stream);
+      if (!this.room$.value?.users[id].isCameraOpen) return;
+      $video.updateStream(id, stream);
     });
   };
 

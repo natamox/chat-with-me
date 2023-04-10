@@ -1,16 +1,22 @@
 import { PageContainer } from '@components';
 import styled from '@emotion/styled';
-import { Button } from 'antd';
+import { Button, Empty } from 'antd';
 import React, { useRef } from 'react';
 import { useModal } from '@hooks';
 import { useNavigate } from 'react-router-dom';
 import { ERoomType } from '@pages/room/models';
+import { useRequest } from 'ahooks';
+import { getRoomList } from '@pages/room/services';
 import { VideoCard } from './videoCard';
 import { RoomModal } from './roomModal';
 
 export function RoomRootPage() {
   const navigate = useNavigate();
   const typeRef = useRef<{ type: ERoomType }>({ type: ERoomType.Create });
+
+  const { data } = useRequest(getRoomList, {
+    pollingInterval: 10000,
+  });
 
   const [openModal, modalProps] = useModal({
     afterComplete: navigate,
@@ -33,15 +39,13 @@ export function RoomRootPage() {
           创建房间
         </Button>
         <Button onClick={joinRoom}>加入房间</Button>
+        <Button onClick={joinRoom}>在线匹配</Button>
       </StyledHeader>
       <StyledContent>
-        <VideoCard />
-        <VideoCard />
-        <VideoCard />
-        <VideoCard />
-        <VideoCard />
-        <VideoCard />
-        <VideoCard />
+        {!data?.length && <Empty />}
+        {data?.map((item) => (
+          <VideoCard key={item.roomId} room={item} />
+        ))}
       </StyledContent>
       <RoomModal type={typeRef.current.type} {...modalProps} />
     </PageContainer>

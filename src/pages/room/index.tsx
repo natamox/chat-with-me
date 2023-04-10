@@ -2,7 +2,7 @@ import { ROUTES } from '@constants';
 import { message } from 'antd';
 import React from 'react';
 import { LoaderFunctionArgs, Navigate, redirect } from 'react-router-dom';
-import { RoomRootPage, VideoChatRoom } from './pages';
+import { CameraChatRoom, RoomRootPage } from './pages';
 import { findRoom } from './services';
 
 async function loader({ params }: LoaderFunctionArgs) {
@@ -26,7 +26,7 @@ export const RoomPageRoutes = [
   {
     path: ':id',
     loader,
-    element: <VideoChatRoom />,
+    element: <CameraChatRoom />,
   },
   {
     path: '*',

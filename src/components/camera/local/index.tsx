@@ -17,7 +17,7 @@ export function LocalCamera({ socket }: IProps) {
   // 获取本地音视频流
   const getVideoStream = async (options: MediaStreamConstraints = DEFAULT_CONSTRAINTS) => {
     const stream = await navigator.mediaDevices.getUserMedia(options);
-    $video.addStream(authStore.user.id, stream);
+    $video.updateStream(authStore.user.id, stream);
     socket.localStream$.next(stream);
   };
 

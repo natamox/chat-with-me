@@ -1,3 +1,4 @@
+import { IUser } from '@model';
 import { authStore } from '@stores';
 import { $http } from '@utils/http';
 
@@ -8,11 +9,14 @@ export interface ILoginParams {
 
 interface ILoginResponse {
   token: string;
-  user: Pick<ILoginParams, 'username'> & { id: string };
+  user: IUser;
 }
 
 export const login = async (params: ILoginParams) => {
-  const res = (await $http.post<IResponse<ILoginResponse>>('user/login', params)).data;
-  authStore.setToken(res.data.token);
-  authStore.setUserInfo({ id: res.data.user.id, username: res.data.user.username });
+  const res = (await $http.post<IResponse<ILoginResponse>>('user/login', params)).data.data;
+  authStore.setToken(res.token);
+  authStore.setUserInfo(res.user);
 };
+
+export const register = async (params: ILoginParams & { nickname: string }) =>
+  (await $http.post<IResponse<ILoginResponse>>('user/register', params)).data.data;

@@ -1,9 +1,13 @@
-const addStream = (id: string, stream: MediaStream) => {
+import { authStore } from '@stores';
+
+const updateStream = (id: string, stream: MediaStream | null) => {
   const video = document.getElementById(`camera_${id}`) as HTMLVideoElement;
   video.srcObject = stream;
-  // video.onloadedmetadata = () => {
-  //   video.play();
-  // };
 };
 
-export const $video = { addStream };
+const getLocalStream = () => {
+  const video = document.getElementById(`camera_${authStore.user.id}`) as HTMLVideoElement;
+  return video.srcObject;
+};
+
+export const $video = { updateStream, getLocalStream };

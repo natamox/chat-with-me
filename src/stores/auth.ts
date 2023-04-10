@@ -14,11 +14,7 @@ class AuthStore {
     makeAutoObservable(this);
   }
 
-  // setUsername(username: string) {
-  //   this.username = username;
-  //   $storage.username = username;
-  // }
-  setUserInfo(user: Omit<IUser, 'socketId'>) {
+  setUserInfo(user: IUser) {
     this.user = user;
     $storage.user = user;
   }
@@ -30,7 +26,7 @@ class AuthStore {
 
   clear = () => {
     this.setToken('');
-    this.setUserInfo({ id: '', username: '' });
+    this.setUserInfo({ id: '', nickname: '', username: '' });
   };
 }
 

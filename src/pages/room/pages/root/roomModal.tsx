@@ -1,12 +1,13 @@
 import { INPUT_RULES } from '@constants';
-import { ERoomType } from '@pages/room/models';
+import { ERoomType as RoomType } from '@pages/room/models';
+import { ERoomType } from '@model';
 import { createRoom, IRoomParams } from '@pages/room/services';
 import { Form, Input, Modal } from 'antd';
 import React, { useState } from 'react';
 
 interface IProps {
   visible: boolean;
-  type: ERoomType;
+  type: RoomType;
   onCancel: () => void;
   onComplete: (id: ISafeAny) => void;
 }
@@ -18,9 +19,9 @@ export function RoomModal({ visible, type, onCancel, onComplete }: IProps) {
     form
       .validateFields()
       .then((formData) => {
-        if (type === ERoomType.Create) {
+        if (type === RoomType.Create) {
           setLoading(true);
-          createRoom(formData)
+          createRoom({ ...formData, type: ERoomType.Chat })
             .then(onComplete)
             .finally(() => setLoading(false));
         } else {
@@ -33,12 +34,12 @@ export function RoomModal({ visible, type, onCancel, onComplete }: IProps) {
   return (
     <Modal open={visible} onCancel={onCancel} onOk={onSubmit} afterClose={form.resetFields} confirmLoading={loading}>
       <Form autoComplete="off" form={form} labelCol={{ span: 4 }} style={{ marginTop: 32 }}>
-        {type === ERoomType.Create && (
+        {type === RoomType.Create && (
           <Form.Item name="roomName" label="房间名" rules={INPUT_RULES.required().rules}>
             <Input placeholder={INPUT_RULES.required().placeholder} />
           </Form.Item>
         )}
-        {type === ERoomType.Join && (
+        {type === RoomType.Join && (
           <Form.Item
             name="roomId"
             label="房间号"

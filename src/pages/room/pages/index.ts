@@ -1,4 +1,4 @@
 import { RoomRootPage } from './root';
-import { VideoChatRoom } from './video-chat-room';
+import { CameraChatRoom } from './camera-chat-room';
 
-export { RoomRootPage, VideoChatRoom };
+export { RoomRootPage, CameraChatRoom };

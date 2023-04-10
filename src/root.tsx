@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-rou
 import { authStore } from '@stores';
 import { DefaultLayout } from '@layouts';
 import { ROUTES } from '@constants';
-import { LoginPage, MatchPage, RoomPageRoutes } from '@pages';
+import { LoginPage, MatchPage, RoomPageRoutes, UserProfilePage } from '@pages';
 
 function Layout() {
   const authenticated = !!authStore.token;
@@ -18,20 +18,6 @@ function Layout() {
   );
 }
 
-// function AppRoutes() {
-//   return (
-//     <Routes>
-//       <Route path={ROUTES.LOGIN} element={<LoginPage />} />
-//       <Route path={ROUTES.ROOT} element={<Layout />}>
-//         <Route index element={<Navigate to={ROUTES.ROOM} />} />
-//         <Route path={`${ROUTES.ROOM}/*`} element={<RoomPage />} />
-//         <Route path={ROUTES.MATH} element={<MatchPage />} />
-//         <Route path="*" element={<Navigate to={ROUTES.ROOM} />} />
-//       </Route>
-//     </Routes>
-//   );
-// }
-
 const router = createBrowserRouter([
   {
     path: ROUTES.LOGIN,
@@ -44,6 +30,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Navigate to={ROUTES.ROOM} />,
+      },
+      {
+        path: ROUTES.USER,
+        element: <UserProfilePage />,
       },
       {
         path: `${ROUTES.ROOM}/*`,

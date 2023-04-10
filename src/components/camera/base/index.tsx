@@ -1,6 +1,6 @@
 import { EyeOutlined } from '@ant-design/icons';
 import styled from '@emotion/styled';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { IUser } from '@model';
 
 interface IProps {
@@ -10,7 +10,7 @@ export function BaseCamera({ user }: IProps) {
   return (
     <StyledContainer>
       <StyledVideo id={`camera_${user?.id}`} autoPlay playsInline />
-      <span style={{ textAlign: 'center' }}>{user?.username}</span>
+      <span style={{ textAlign: 'center' }}>{user?.nickname}</span>
     </StyledContainer>
   );
 }
@@ -23,16 +23,8 @@ const StyledContainer = styled.div`
 `;
 
 const StyledVideo = styled.video`
+  background-color: #000;
   width: 100%;
   height: 100%;
   /* aspect-ratio: 16 / 9; */
-`;
-
-const StyledToolbar = styled.div`
-  display: flex;
-`;
-
-const StyledEyeIcon = styled(EyeOutlined)`
-  font-size: 20px;
-  color: #fff;
 `;
