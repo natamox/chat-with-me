@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { useObservable } from '@hooks';
 import { RtcSocket } from '@rtc-socket';
 
-export function CameraChatRoom() {
+export function CameraChatRoomPage() {
   const { id = '' } = useParams();
   const socket = useMemo(() => new RtcSocket(id), [id]);
 

@@ -1,7 +1,8 @@
 import { ESocketMessage, IMessage, IRoom, IRoomUpdateData, IRoomUser, ISignalData } from '@model';
 import { authStore } from '@stores';
 import { message as antdMessage } from 'antd';
-import { cloneDeep, values } from 'lodash';
+import { cloneDeep, keyBy, values } from 'lodash';
+import adapter from 'webrtc-adapter';
 import { BehaviorSubject, filter } from 'rxjs';
 import _io, { Socket } from 'socket.io-client';
 import Peer from 'simple-peer';
@@ -9,18 +10,26 @@ import { $video } from '@utils';
 import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
 
-const CONFIG = {
-  iceServers: [{ urls: 'stun:stun1.l.google.com:19302' }],
+const CONFIG: RTCConfiguration = {
+  // iceServers: [
+  //   {
+  //     urls: 'stun:stun.l.google.com:19302',
+  //   },
+  // ],
 };
 
 class RtcSocket {
   readonly roomId;
+
+  isJoined = false;
 
   readonly room$ = new BehaviorSubject<IRoom | undefined>(undefined);
 
   readonly peers: { [key: string]: Peer.Instance } = {};
 
   readonly peerStreams: { [key: string]: MediaStream } = {};
+
+  cloneLocalStream: MediaStream | null = null;
 
   readonly localStream$ = new BehaviorSubject<MediaStream | null>(null);
 
@@ -38,7 +47,14 @@ class RtcSocket {
     });
 
     // 进入页面初始化本地媒体流之后发起加入房间连接
-    this.localStream$.pipe(filter((stream) => stream !== null)).subscribe(() => this.joinRoom());
+    this.localStream$.pipe(filter((stream) => stream !== null)).subscribe((res) => {
+      // 这里本地使用的是克隆的那一份是因为后面关闭、打开摄像头的时候会把本地的也给关闭了，为了避免这种情况
+      this.cloneLocalStream = res!.clone();
+      $video.updateStream(authStore.user.id, this.cloneLocalStream!);
+      // 这里返回是因为后续切换摄像头是会再次触发这个流，但是不需要再次加入房间
+      if (this.isJoined) return;
+      this.joinRoom();
+    });
 
     /** ***************** 监听服务端消息 **************** */
     this.io.on(ESocketMessage.Connect, () => {
@@ -56,10 +72,11 @@ class RtcSocket {
     this.io.on(ESocketMessage.Joined, ({ room, user }: IRoomUpdateData) => {
       this.userUpdate(room.users);
       if (authStore.user.id !== user.id) {
-        antdMessage.info(`${user.nickname} 加入房间🎉`);
+        // antdMessage.info(`${user.nickname} 加入房间🎉`);
       } else {
         this.room$.next(room);
         this.message$.next(room.message);
+        this.isJoined = true;
       }
     });
 
@@ -68,15 +85,7 @@ class RtcSocket {
       this.peers[user.id].destroy();
       delete this.peers[user.id];
       delete this.peerStreams[user.id];
-      antdMessage.info(`${user.nickname} 离开房间`);
-    });
-
-    this.io.on(ESocketMessage.OpenCamera, (userId: string) => {
-      $video.updateStream(userId, this.peerStreams[userId]);
-    });
-
-    this.io.on(ESocketMessage.CloseCamera, (userId: string) => {
-      $video.updateStream(userId, null);
+      // antdMessage.info(`${user.nickname} 离开房间`);
     });
 
     // 请求 webRTC 连接
@@ -123,16 +132,24 @@ class RtcSocket {
   };
 
   openCamera = () => {
-    this.io?.emit(ESocketMessage.OpenCamera, this.roomId);
+    const stream = this.localStream$.value as MediaStream;
+    stream.getVideoTracks()[0].enabled = true;
   };
 
   closeCamera = () => {
-    this.io?.emit(ESocketMessage.CloseCamera, this.roomId);
+    const stream = this.localStream$.value as MediaStream;
+    stream.getVideoTracks()[0].enabled = false;
   };
 
-  // match = () => {
-  //   this.io?.emit(ESocketMessage.Match, { userId: '1', roomId: '2' });
-  // };
+  closeAudio() {
+    const stream = this.localStream$.value as MediaStream;
+    stream.getAudioTracks()[0].enabled = false;
+  }
+
+  openAudio() {
+    const stream = this.localStream$.value as MediaStream;
+    stream.getAudioTracks()[0].enabled = true;
+  }
 
   preparePeerConnection = ({ id, socketId }: IRoomUser, isInitiator: boolean) => {
     // 实例化对等连接对象
@@ -149,12 +166,14 @@ class RtcSocket {
     // 获取媒体流stream
     this.peers[id].on(ESocketMessage.Stream, (stream) => {
       this.peerStreams[id] = stream;
-      if (!this.room$.value?.users[id].isCameraOpen) return;
       $video.updateStream(id, stream);
     });
   };
 
   destroy = () => {
+    this.localStream$.value?.getTracks().forEach((track) => {
+      track.stop();
+    });
     this.io?.disconnect();
   };
 }

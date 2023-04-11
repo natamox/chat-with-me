@@ -2,8 +2,9 @@ import { ROUTES } from '@constants';
 import { message } from 'antd';
 import React from 'react';
 import { LoaderFunctionArgs, Navigate, redirect } from 'react-router-dom';
-import { CameraChatRoom, RoomRootPage } from './pages';
-import { findRoom } from './services';
+import { ERoomType } from '@model';
+import { CameraChatRoomPage, RoomRootPage, MatchChatRoomPage } from './pages';
+import { getRoom } from './services';
 
 async function loader({ params }: LoaderFunctionArgs) {
   const { id = '' } = params;
@@ -11,7 +12,17 @@ async function loader({ params }: LoaderFunctionArgs) {
     message.warning('房间号格式不正确！');
     return redirect(ROUTES.ROOM);
   }
-  if (!(await findRoom(id))) {
+  const room = await getRoom(id);
+  if (!room || room.type !== ERoomType.Chat) {
+    message.warning('未找到该房间！');
+    return redirect(ROUTES.ROOM);
+  }
+  return true;
+}
+async function matchLoader({ params }: LoaderFunctionArgs) {
+  const { id = '' } = params;
+  const room = await getRoom(id);
+  if (!room || room.type !== ERoomType.Match) {
     message.warning('未找到该房间！');
     return redirect(ROUTES.ROOM);
   }
@@ -26,7 +37,12 @@ export const RoomPageRoutes = [
   {
     path: ':id',
     loader,
-    element: <CameraChatRoom />,
+    element: <CameraChatRoomPage />,
+  },
+  {
+    path: 'match/:id',
+    loader: matchLoader,
+    element: <MatchChatRoomPage />,
   },
   {
     path: '*',

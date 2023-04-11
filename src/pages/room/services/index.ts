@@ -11,12 +11,17 @@ export const createRoom = async ({ roomName, type }: IRoomParams) => {
   return res.data.data.roomId;
 };
 
-export const findRoom = async (roomId: string) => {
-  const res = await $http.get<IResponse<boolean>>('room', { params: { roomId } });
+export const getRoom = async (roomId: string) => {
+  const res = await $http.get<IResponse<IRoom>>('room', { params: { roomId } });
   return res.data.data;
 };
 
 export const getRoomList = async () => {
   const res = await $http.get<IResponseList<Pick<IRoom, 'roomId' | 'roomName' | 'users' | 'type'>>>('room/list');
   return res.data.data.items;
+};
+
+export const match = async () => {
+  const res = await $http.get<IResponse<{ roomId: string | null }>>('room/match');
+  return res.data.data;
 };

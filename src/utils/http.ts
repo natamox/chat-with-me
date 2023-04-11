@@ -3,7 +3,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { message as antdMessage } from 'antd';
 import { cloneDeep, get, isString, toNumber } from 'lodash';
 
-const BASE_URL = 'http://127.0.0.1:4399';
+const BASE_URL = import.meta.env.VITE_SERVER_HOST;
 
 function createHttp() {
   const client = axios.create({

@@ -10,7 +10,7 @@ export function MessageBubble({ message }: IProps) {
   return (
     <StyledContainer isSelf={message?.user.id === authStore.user.id}>
       <Avatar className="avatar" src="https://joesch.moe/api/v1/random?key=1" size="large" />
-      <div>
+      <div className="info">
         <div className="nickname">{message?.user.nickname}</div>
         <div className="bubble">
           <span className="text">{message?.text}</span>
@@ -30,6 +30,11 @@ const StyledContainer = styled.div<IStyledContainerProps>`
   transform: ${(props) => (props.isSelf ? 'scaleX(-1)' : 'none')};
   .avatar {
     transform: ${(props) => (props.isSelf ? 'scaleX(-1)' : 'none')};
+  }
+  .info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
   .nickname {
     transform: ${(props) => (props.isSelf ? 'scaleX(-1)' : 'none')};
