@@ -28,12 +28,6 @@ export function LeftSlideBar() {
       onClick: onNavigate,
       icon: <VideoCameraAddOutlined />,
     },
-    {
-      key: ROUTES.MATH,
-      label: '匹配',
-      onClick: onNavigate,
-      icon: <VideoCameraOutlined />,
-    },
   ];
 
   const userItems: ItemType[] = [
@@ -61,8 +55,8 @@ export function LeftSlideBar() {
 
 const StyledContainer = styled.div`
   display: flex;
-  min-width: 160px;
-  max-width: 220px;
+  min-width: 200px;
+  max-width: 240px;
   flex-direction: column;
 `;
 

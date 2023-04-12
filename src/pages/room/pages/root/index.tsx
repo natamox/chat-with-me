@@ -1,6 +1,6 @@
 import { PageContainer } from '@components';
 import styled from '@emotion/styled';
-import { Button, Empty, Tooltip, message } from 'antd';
+import { Button, Empty, List, Tooltip, message } from 'antd';
 import React, { useRef } from 'react';
 import { useModal } from '@hooks';
 import { useNavigate } from 'react-router-dom';
@@ -47,10 +47,15 @@ export function RoomRootPage() {
         </Tooltip>
       </StyledHeader>
       <StyledContent>
-        {!data?.length && <Empty />}
-        {data?.map((item) => (
-          <VideoCard key={item.roomId} room={item} />
-        ))}
+        <List
+          grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 7 }}
+          dataSource={data}
+          renderItem={(item) => (
+            <List.Item>
+              <VideoCard room={item} />
+            </List.Item>
+          )}
+        />
       </StyledContent>
       <RoomModal type={typeRef.current.type} {...modalProps} />
       <MatchModal {...matchModalProps} />
@@ -65,11 +70,8 @@ const StyledHeader = styled.div`
 `;
 
 const StyledContent = styled.div`
-  padding: 12px 0;
+  padding: 12px;
+  margin: 12px;
   height: calc(100% - 84px);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(285px, 1fr));
-  grid-auto-flow: dense;
-  gap: 12px;
   overflow-y: auto;
 `;

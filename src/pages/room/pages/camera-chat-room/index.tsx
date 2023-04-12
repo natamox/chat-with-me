@@ -21,7 +21,7 @@ export function CameraChatRoomPage() {
   return (
     <PageContainer>
       <StyledContainer>
-        <StyledHeader>{`房间名：${room?.roomName}`}</StyledHeader>
+        <StyledHeader>{`房间名：${room?.roomName ?? ''}`}</StyledHeader>
         <StyledCameraContainer>
           <LocalCamera socket={socket} />
           <RemoteCamera socket={socket} user={users?.at(0)} />
