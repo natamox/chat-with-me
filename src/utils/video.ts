@@ -7,7 +7,7 @@ const updateStream = (id: string, stream: MediaStream | null) => {
 
 const getLocalStream = () => {
   const video = document.getElementById(`camera_${authStore.user.id}`) as HTMLVideoElement;
-  return video.srcObject;
+  return video.srcObject as MediaStream;
 };
 
 export const $video = { updateStream, getLocalStream };

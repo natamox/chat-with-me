@@ -57,13 +57,9 @@ class RtcSocket {
     });
 
     /** ***************** 监听服务端消息 **************** */
-    this.io.on(ESocketMessage.Connect, () => {
-      // console.log('连接成功！');
-    });
+    this.io.on(ESocketMessage.Connect, () => {});
 
-    this.io.on(ESocketMessage.Disconnect, () => {
-      // console.log('断开连接！');
-    });
+    this.io.on(ESocketMessage.Disconnect, () => {});
 
     this.io.on(ESocketMessage.Message, (data: IMessage) => {
       this.message$.next([...this.message$.value, data]);
@@ -133,22 +129,34 @@ class RtcSocket {
 
   openCamera = () => {
     const stream = this.localStream$.value as MediaStream;
-    stream.getVideoTracks()[0].enabled = true;
+    stream.getVideoTracks().forEach((track, index) => {
+      stream.getVideoTracks()[index].enabled = true;
+    });
+    // stream.getVideoTracks()[0].enabled = true;
   };
 
   closeCamera = () => {
     const stream = this.localStream$.value as MediaStream;
-    stream.getVideoTracks()[0].enabled = false;
+    stream.getVideoTracks().forEach((track, index) => {
+      stream.getVideoTracks()[index].enabled = false;
+    });
+    // stream.getVideoTracks()[0].enabled = false;
   };
 
   closeAudio() {
     const stream = this.localStream$.value as MediaStream;
-    stream.getAudioTracks()[0].enabled = false;
+    stream.getAudioTracks().forEach((track, index) => {
+      stream.getAudioTracks()[index].enabled = false;
+    });
+    // stream.getAudioTracks()[0].enabled = false;
   }
 
   openAudio() {
     const stream = this.localStream$.value as MediaStream;
-    stream.getAudioTracks()[0].enabled = true;
+    stream.getAudioTracks().forEach((track, index) => {
+      stream.getAudioTracks()[index].enabled = true;
+    });
+    // stream.getAudioTracks()[0].enabled = true;
   }
 
   preparePeerConnection = ({ id, socketId }: IRoomUser, isInitiator: boolean) => {

@@ -54,14 +54,12 @@ export function ChatToolBar({ socket }: IProps) {
   const onVideoDeviceChange = (id: string) => {
     navigator.mediaDevices.getUserMedia({ ...DEFAULT_CONSTRAINTS, video: { deviceId: id } }).then((stream) => {
       onStreamChange(stream);
-      socket.localStream$.next(stream);
       setVideoCurrentDevice(id);
     });
   };
 
   const onShareScreen = () => {
-    const constraints = { video: true, audio: false };
-    navigator.mediaDevices.getDisplayMedia(constraints).then((stream) => {
+    navigator.mediaDevices.getDisplayMedia({ video: true, audio: false }).then((stream) => {
       onStreamChange(stream);
     });
   };
@@ -74,11 +72,12 @@ export function ChatToolBar({ socket }: IProps) {
       peer.removeStream(oldStream!);
       peer.addStream(stream);
     });
-    socket.users$.value.forEach((user) => {
-      // eslint-disable-next-line no-param-reassign
-      socket.peerStreams[user.id] = stream;
-    });
+    // socket.users$.value.forEach((user) => {
+    //   // eslint-disable-next-line no-param-reassign
+    //   socket.peerStreams[user.id] = stream;
+    // });
     oldStream!.getTracks().forEach((track) => track.stop());
+    socket.localStream$.next(stream);
   };
 
   const onKeyDown = useCallback(
