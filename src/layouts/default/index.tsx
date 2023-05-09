@@ -22,5 +22,6 @@ const StyledContainer = styled.div`
 const StyledRightContainer = styled.div`
   flex: 1;
   padding: 16px;
-  background: #f4f5f8;
+  background: #f7f7f7;
+  /* background: #f4f5f8; */
 `;
