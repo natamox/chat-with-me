@@ -11,11 +11,11 @@ import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
 
 const CONFIG: RTCConfiguration = {
-  // iceServers: [
-  //   {
-  //     urls: 'stun:stun.l.google.com:19302',
-  //   },
-  // ],
+  iceServers: [
+    {
+      urls: 'stun:stun.l.google.com:19302',
+    },
+  ],
 };
 
 class RtcSocket {
